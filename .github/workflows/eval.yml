@@ -1,0 +1,36 @@
+name: eval
+
+# The regression gate. Every script in data/scripts/ must stay grounded: if a
+# change drops citation coverage below threshold or breaks structure, the build
+# fails. Corpora and scripts are committed, so this needs no network, no API key
+# and no models — it runs in seconds.
+#
+# Deliberately NOT running the media stages: narration and image generation are
+# ~3 hours of CPU per video. The cheap deterministic checks are what belong in CI.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  grounding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install (eval deps only — no torch, no models)
+        run: pip install pyyaml
+
+      - name: Citation coverage + faithfulness gate
+        run: python -m src.eval.run_script_eval
+
+      - name: Corpus quality gate
+        run: python -m src.ingest.corpus_quality || true
+        # Non-blocking: a WARN here means a wiki got thinner upstream, which is
+        # information, not a reason to fail someone's PR.

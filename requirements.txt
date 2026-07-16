@@ -1,0 +1,24 @@
+# Core: ingest, retrieval, generation, eval, assembly.
+# Safe to install anywhere — no torch, no conflicts.
+requests>=2.31
+beautifulsoup4>=4.12
+pyyaml>=6.0
+numpy>=1.26
+rank-bm25>=0.2.2
+sentence-transformers>=2.7        # vector retriever (MiniLM)
+pillow>=10.0                      # placeholder image cards
+
+# LLM providers (pick what you use; all optional)
+google-generativeai>=0.5          # provider="gemini"
+anthropic>=0.34                   # provider="anthropic"
+# ollama runs as a local service — no pip package needed
+
+# Captions. ctranslate2-based, so it pulls in NEITHER diffusers nor
+# transformers — that is why it can share an env with anything.
+faster-whisper>=1.0
+
+# ── media stages: SEE README, THESE CONFLICT ─────────────────────────────────
+# chatterbox-tts pins diffusers==0.29.0; stable diffusion needs >=0.31.
+# They cannot coexist. Use requirements-voice.txt and requirements-image.txt in
+# two separate virtualenvs. Do not install both here.
+piper-tts>=1.4                    # fast/flat TTS — no conflict, safe anywhere

@@ -1,0 +1,33 @@
+﻿# gitignore does NOT support trailing comments — a rule like
+#   data/images/    # generated
+# is read as that literal string and matches nothing.
+
+data/audio/
+data/images/
+data/subs/
+data/pipper_scripts/
+data/runs.jsonl
+outputs/
+
+models/
+*.onnx
+*.onnx.json
+
+*.wav
+*.mp3
+*.mp4
+*.zip
+
+test_*.py
+sweep_*.py
+stitch_parts.py
+deploy.py
+prompt_preview.txt
+
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.env

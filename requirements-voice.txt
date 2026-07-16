@@ -1,0 +1,11 @@
+# .venv-voice — narration only.
+#   python -m venv .venv-voice && .venv-voice\Scripts\activate
+#   pip install -r requirements.txt -r requirements-voice.txt
+#
+# chatterbox-tts hard-pins these two. Do not upgrade them in this env: newer
+# diffusers breaks the import chain via transformers.utils.FLAX_WEIGHTS_NAME.
+chatterbox-tts>=0.1.7
+diffusers==0.29.0
+safetensors==0.5.3
+resemble-perth                    # watermarker; tts.py no-ops it if it fails to resolve
+torchaudio>=2.0

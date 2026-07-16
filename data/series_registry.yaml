@@ -1,0 +1,157 @@
+# AnimeCont series registry
+# ---------------------------
+# Fill ONE block per anime. The corpus builder reads this file and generates
+# data/corpus/<subdomain>.md for each entry automatically. You never paste pages.
+#
+# Fields:
+#   name              display name (free text)
+#   subdomain         the "<x>" in x.fandom.com  (read it off the wiki URL)
+#   continuation_type "parts"      -> manga continues as whole new parts (no trimming)
+#                     "continuous" -> one ongoing story (needs cutoff_chapter)
+#   cutoff_chapter    ONLY for continuous series: the chapter the anime ended on.
+#                     Leave as null for "parts" series.
+#   pages             exact wiki page titles to ingest (the part of the URL after
+#                     /wiki/). For "parts": the post-anime part pages. For
+#                     "continuous": the arc pages that BEGIN after cutoff_chapter.
+
+series:
+  - name: JoJo's Bizarre Adventure
+    subdomain: jojo
+    continuation_type: parts
+    cutoff_chapter: null
+    pages: [Steel_Ball_Run, JoJolion, The_JOJOLands]
+
+  - name: Jujutsu Kaisen
+    subdomain: jujutsu-kaisen
+    continuation_type: continuous
+    cutoff_chapter: 181        # Season 3 finale (mid-Culling Game)
+    pages: [Culling_Game_Arc, Shinjuku_Showdown_Arc]
+
+  - name: Demon Slayer
+    subdomain: kimetsu-no-yaiba
+    continuation_type: continuous
+    cutoff_chapter: 157        # Infinity Castle Movie 1 — latest adaptation
+    # Arc pages are stubs (~350 words total); real plot lives on per-chapter pages.
+    # Final Battle Arc = Infinity Castle + Sunrise Countdown; manga ends at ch.205.
+    chapter_range: [137, 205]
+    pages: []
+
+  - name: Vinland Saga
+    subdomain: vinlandsaga
+    continuation_type: continuous
+    cutoff_chapter: 101
+    chapter_range: [100, 183]
+    pages: [Timeline, Thorfinn, Canute, Einar, Gudrid, Hild, Thorkell]
+
+  - name: Solo Leveling
+    subdomain: solo-leveling
+    continuation_type: continuous
+    cutoff_chapter: 111
+    # Arc pages are thin (Premise + bullet lists only) and chapter/episode pages
+    # are stubs. Real plot detail lives on entity pages — point at those instead.
+    pages: [
+      Sung_Jinwoo,
+      Antares,
+      Ashborn,
+      Monarchs,
+      Rulers,
+      Beast_Monarch,
+      Frost_Monarch,
+      Christopher_Reed,
+      Thomas_Andre,
+      Liber,
+      Cha_Hae-In,
+      Go_Gunhee
+    ]
+    chapter_range: []
+
+  - name: Black Clover
+    subdomain: blackclover
+    continuation_type: continuous
+    cutoff_chapter: 270        # anime finale (movie non-canon). NB: S2 airs Oct 2026 — revisit cutoff then
+    pages: [Arc_10, Arc_11]    # Arc_10 straddles 270; boundary filter trims the pre-270 part
+
+ # - name: Kaiju No. 8
+  #  subdomain: kaiju-no-8
+   # continuation_type: continuous
+    #cutoff_chapter: 76         # Season 2 finale
+    #pages: [The_Second_Wave_Arc, The_Last_Wave_Arc]
+
+  #- name: Daemons of the Shadow Realm
+   # subdomain: yomi-no-tsugai   # Japanese title (Yomi no Tsugai), NOT daemons-...
+    #continuation_type: continuous
+    #cutoff_chapter: 28         # Season 1 finale; ch.28 is near the END of Fujimurayama
+    # Fujimurayama = mostly pre-anime (only its last ~3-4 ch are post-28); Nishino = fully post.
+    # Kept both; boundary filter trims what it can. Revisit if eval shows pre-anime bleed.
+    # "current arc" has no wiki page yet — add when the wiki writes it up
+    #pages: [Fujimurayama_Warehouse_Arc, Nishino_Village_Investigation_Arc]
+
+  - name: Frieren
+    subdomain: frieren
+    continuation_type: continuous
+    cutoff_chapter: 81         # Season 2 finale; ch.81 = start of The Golden Land Arc
+    chapter_range: [81, 147]
+    pages: []
+
+  - name: Gachiakuta
+    subdomain: gachiakuta
+    continuation_type: continuous
+    cutoff_chapter: 89         # Season 1 finale; ch.89 = 2nd-to-last ch of Heritage Mural Arc
+    # Heritage Mural mostly pre-anime (tail is post-89); the other three are fully post. Order per wiki.
+    pages: [Heritage_Mural_Arc, Information_Broker_Arc, First_Job_Arc, Doll_Festival_Arc]
+
+  - name: Hell's Paradise
+    subdomain: jigokuraku       # Japanese title (Jigokuraku), NOT hells-paradise
+    continuation_type: continuous
+    cutoff_chapter: 90         # Season 2 finale; ch.90 ~60% through Hōrai (straddles), Departure fully post
+    # Hōrai_Arc uses a macron (URL shows H%C5%8Drai). If it 404s on build, try plain "Horai_Arc".
+    pages: ["Hōrai_Arc", Departure_Arc]
+
+  - name: Chainsaw Man
+    subdomain: chainsaw-man
+    continuation_type: continuous
+    cutoff_chapter: 53         # Reze Arc movie (latest adaptation); ch.53 = 1st ch of Intl Assassins (clean cut)
+    # lowercase "arc" is intentional — matches the wiki's actual page titles (case-sensitive)
+    # Part 1 tail: Intl Assassins -> Falling Devil.  Part 2 (Academy Saga): Justice Devil -> War Devil.
+    pages: [International_Assassins_arc, Gun_Devil_arc, Control_Devil_arc, Justice_Devil_arc,
+            Dating_Denji_arc, Falling_Devil_arc, Chainsaw_Man_Church_arc, Aging_Devil_arc, War_Devil_arc]
+
+  - name: Plunderer
+    subdomain: plunderer
+    continuation_type: continuous
+    cutoff_chapter: 37         # anime finale
+    # HAND-CURATED corpus already exists at data/corpus/plunderer.md with richer chapter-range
+    # citations than auto-ingest gives. Builder SKIPS this (empty pages) so it won't be overwritten.
+    # Doubles as the golden / hand-verified reference corpus for evaluation.
+    pages: []                  # intentionally empty — do not fetch; corpus is hand-built
+
+  # --- add your remaining ~13 below, copy this block per anime ---
+
+  # OUT OF SCOPE — no manga runs AHEAD of the anime, so there's no unadapted story to continue.
+  # - Sekiro: No Defeat   (anime of a video game; story ends with the game)
+  # - Ghost of Tsushima   (anime of a video game; no ongoing manga)
+  # - Link Click          (anime-original donghua; manhua only ADAPTS it, runs behind, not ahead)
+  # - To Be Hero X        (anime-original donghua; no manga or LN exists — anime IS the full story)
+  # - name: 86 Eighty-Six
+  #   subdomain: 86-eighty-six   # confirm off the wiki URL
+  #   continuation_type: continuous
+  #   cutoff_chapter: null       # continuation is Novel 4 onward, not chapter-based
+  #   pages: []                  # light-novel wiki — check for volume plot pages first
+  #
+  # - name: Fate/strange Fake
+  #   subdomain: typemoon         # likely on the shared Type-Moon wiki — confirm
+  #   continuation_type: continuous
+  #   cutoff_chapter: null        # continuation is Novel 7 onward, not chapter-based
+  #   pages: []                   # light-novel — check for volume plot pages first
+  #
+  # - name: Re:Zero               # BEST first LN to tackle: content is split into numbered
+  #   subdomain: rezero           #   Web Novel Arcs (cleaner than most LN wikis). Confirm subdomain.
+  #   continuation_type: continuous
+  #   cutoff_chapter: null        # cutoff is season-dependent: S1->Arc4, S2->Arc5, S3->Novel 21
+  #   pages: []                   # Web Novel Arc pages, from the arc after the latest season
+  #
+  # - name: Lord of the Mysteries # Chinese web novel; continuation is Novel 2 / WN ch.215 onward.
+  #   subdomain: lordofthemysteries  # confirm off the wiki URL
+  #   continuation_type: continuous  # (manhua adaptation trails the anime — not usable)
+  #   cutoff_chapter: 215         # Web Novel chapter numbering
+  #   pages: []                   # web-novel volume/arc pages, from ch.215 onward

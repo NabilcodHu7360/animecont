@@ -1,0 +1,10 @@
+# .venv-image — stable diffusion only.
+#   python -m venv .venv-image && .venv-image\Scripts\activate
+#   pip install -r requirements.txt -r requirements-image.txt
+#
+# Modern diffusers. Incompatible with chatterbox-tts — hence the separate env.
+diffusers>=0.31
+transformers>=4.44
+torch>=2.0
+accelerate                        # faster/leaner model loading
+safetensors>=0.8
