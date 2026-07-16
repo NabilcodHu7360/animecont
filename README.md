@@ -160,10 +160,42 @@ Without it, voice cloning is impossible on either model.
 
 ## Status
 
-Plunderer is complete end-to-end. All 11 scripts are written, evaluated and CI-gated;
-the other ten are render-ready (~3 CPU-hours each) but rendering them proves nothing
-new — the pipeline is the artifact, not the batch. See `docs/PROJECT_ROADMAP.md`.
+Plunderer is complete end-to-end: wiki → corpus → cited script → eval → narration →
+25 generated backgrounds → captions → a 6-minute MP4. All 11 scripts are written,
+evaluated and CI-gated. The other ten are render-ready at roughly 3 CPU-hours each,
+but rendering them would exercise identical code paths with different inputs — the
+pipeline is the artifact, not the batch. See `docs/PROJECT_ROADMAP.md`.
 
-Not done, deliberately: cross-encoder reranking (marginal on an 11-series corpus),
-LoRA fine-tuning (no training set worth the name), real-time streaming
-(architecturally opposed to a 90-minute batch render).
+## Scope: what I didn't build, and why
+
+Three things a reviewer will look for and not find. Each was considered and cut for
+a reason, and I'd rather say so than have the gaps read as oversights.
+
+**Cross-encoder reranking.** The standard third stage of a production RAG stack: a
+model that re-scores the top-k hits for precision after retrieval has done recall.
+It earns its keep when retrieval returns a hundred plausible candidates from a large
+corpus and the ordering genuinely decides the answer. Here the corpus is eleven
+series of wiki prose, and for whole-story script generation the generator often
+receives *most* of the relevant chapters as grounding anyway — coverage matters more
+than ranking. Adding a reranker would buy a line on a checklist and roughly nothing
+measurable. If the corpus grew to thousands of series, this is the first thing I'd add.
+
+**LoRA / DPO fine-tuning.** Supervised fine-tuning wants thousands of clean
+input–output pairs; DPO wants preference labels on top of that. I have eleven
+scripts. I could run the training loop and produce a notebook proving I know the API
+— but there'd be no honest before/after metric at the end, because eleven examples
+can't move a model in a way that means anything. A fine-tune with nothing to show is
+worse than no fine-tune. The interesting version of this project would be a small
+model trained to turn plot summaries into structured beat sheets — that needs a
+dataset that doesn't exist yet.
+
+**Real-time streaming.** Latency budgets, time-to-first-token, graceful degradation
+under a deadline. These matter enormously — and none of them apply to a pipeline
+whose image stage takes 94 minutes on CPU. You cannot give a batch renderer a latency
+budget without making it a different product. What *does* transfer is the resilience
+half: missing wiki pages, 404s, stub chapters and dead slugs all degrade with a
+warning rather than killing a multi-series build, because early on a single bad page
+slug (`Liber`, in Solo Leveling) took down an entire run.
+
+The pattern in all three: the competency is real, but forcing it into a system that
+doesn't need it produces a worse system and a less honest portfolio.
