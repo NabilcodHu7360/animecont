@@ -4,6 +4,10 @@ Turns "what happens in the manga after the anime ends?" into a finished, narrate
 cited video essay — wiki ingest → grounded script → evaluation → voice → images →
 captions → MP4. Every model runs locally. No paid APIs anywhere in the pipeline.
 
+**[▶ Watch the output — Plunderer, 6 min](https://youtu.be/NF5Li_yRDd0)** — generated
+end to end by this pipeline: grounded script, cloned narration, 25 Stable Diffusion
+backgrounds, burned-in captions. Every plot claim in it traces to a cited wiki chapter.
+
 **The problem this is built around:** an LLM asked to recap a specific manga will
 confidently invent reveals that never happened. For a video claiming to recount
 canon, that isn't a rough edge — it's the whole ballgame. So retrieval, citation
@@ -165,6 +169,16 @@ Plunderer is complete end-to-end: wiki → corpus → cited script → eval → 
 evaluated and CI-gated. The other ten are render-ready at roughly 3 CPU-hours each,
 but rendering them would exercise identical code paths with different inputs — the
 pipeline is the artifact, not the batch. See `docs/PROJECT_ROADMAP.md`.
+
+## Licensing
+
+Code is MIT. The data isn't, and that distinction matters: `data/corpus/` is built
+from Fandom wikis, whose community content is **CC BY-SA 3.0** — so the corpus files
+and the scripts derived from them carry share-alike terms, not MIT. Every passage
+keeps its source in the heading (`## [series=frieren | page=Chapter_81 | section=Summary]`),
+so attribution is mechanical rather than a promise. See `NOTICE` for the full picture,
+including model licenses (SD 1.5 ships under CreativeML Open RAIL-M, which has
+use-based restrictions worth reading before anyone reuses this).
 
 ## Scope: what I didn't build, and why
 

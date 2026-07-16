@@ -1,0 +1,43 @@
+Third-party content and licensing
+=================================
+
+The MIT license in LICENSE covers the code. The data in this repository has
+different terms, and this file exists to state them plainly.
+
+data/corpus/*.md — CC BY-SA 3.0
+-------------------------------
+Built by src/ingest/ from Fandom wikis via the MediaWiki API. Fandom community
+content is licensed CC BY-SA 3.0 Unported, so these corpus files are derivative
+works under that license: attribution required, share-alike on redistribution.
+
+Each passage carries its source in the heading, e.g.
+    ## [series=frieren | page=Chapter_81 | section=Summary]
+so every line traces back to the wiki page it came from. Source wikis are listed
+by subdomain in data/series_registry.yaml (frieren.fandom.com,
+kimetsu-no-yaiba.fandom.com, and so on).
+
+data/scripts/*.md — derivative, CC BY-SA 3.0
+--------------------------------------------
+Authored prose, but grounded in and derived from the corpus above, and therefore
+subject to the same share-alike terms. Their citations ([ch.81], [Doll Festival
+Arc]) point back to corpus passages, which point back to Fandom.
+
+Underlying works
+----------------
+The manga and anime summarised here are copyright their respective creators and
+publishers. This project recounts plot as commentary and criticism. It generates
+no character imagery: every [VISUAL:] cue is an atmospheric scene with
+"no characters" in both the prompt and the negative prompt (see README).
+
+Models
+------
+Piper (MIT) · Chatterbox (MIT, Resemble AI) · Stable Diffusion v1.5
+(CreativeML Open RAIL-M — note its use-based restrictions) · faster-whisper
+(MIT) · sentence-transformers (Apache 2.0). Model weights are not redistributed
+here; each is fetched by its own tooling.
+
+Scope
+-----
+This is a portfolio demonstration, not a publishing operation. Generating recaps
+at scale, monetising them, or reproducing licensed art would raise questions this
+repository does not attempt to answer.
