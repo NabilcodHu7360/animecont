@@ -24,11 +24,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # Names Whisper won't know. Biasing the decoder beats fixing 40 captions by hand.
-SERIES_VOCAB = {
-    "plunderer": ("Plunderer, Schmelman Bach, Firenda, Nikola, Licht, Hina, "
-                  "Tokikaze, Gespenst Zerlegen, Pele Poporo, Lynn, Jail, "
-                  "Mizuka, Althing, Althea, Abyss, Ballots, Ende, Eins, "
-                  "Alan, Class A, Count"),
+SERIES_VOCAB: dict[str, str] = {
+    # Per-series proper nouns to bias the decoder, e.g.:
+    #   "jojo": "Gyro Zeppeli, Funny Valentine, Steel Ball Run, Tusk, D4C, ...",
 }
 
 MAX_CHARS_PER_LINE = 42
@@ -141,8 +139,8 @@ def generate(series: str, audio_path: Path | None = None,
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("Usage: python -m src.captions.captions plunderer")
-        print("       python -m src.captions.captions plunderer --model small")
+        print("Usage: python -m src.captions.captions jojo")
+        print("       python -m src.captions.captions jojo --model small")
         sys.exit(2)
     series = sys.argv[1]
     size = "base"

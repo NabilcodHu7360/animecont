@@ -60,12 +60,6 @@ CHATTERBOX_MAX_CHARS = 300
 # text only — the .md keeps the real spelling, so eval and captions are correct.
 # Order matters: longer keys first so substrings don't clobber them.
 PRONUNCIATIONS = {
-    # plunderer
-    "Schmelman": "Shmell-man", "Tokikaze": "Toe-kee-kah-zay",
-    "Gespenst": "Geh-shpenst", "Zerlegen": "Tsair-lay-gen",
-    "Firenda": "Fih-ren-dah", "Althing": "All-thing", "Althea": "Al-thee-ah",
-    "Licht": "Likht", "Mizuka": "Mee-zoo-kah",
-    "Poporo": "Poh-poh-roh", "Taketora": "Tah-keh-toh-rah",
     # demon slayer
     "Kokushibo": "Koh-koo-shee-boh", "Michikatsu": "Mee-chee-kaht-soo",
     "Tsugikuni": "Tsoo-gee-koo-nee", "Yoriichi": "Yoh-ree-ee-chee",
@@ -116,7 +110,7 @@ _ALLCAPS_RE = re.compile(r"\b[A-Z]{2,}\b")
 
 
 def _decap(text: str) -> str:
-    """ALL-CAPS words get read out letter by letter ("PLUNDERER" -> P-L-U-N-...).
+    """ALL-CAPS words get read out letter by letter ("TITLE" -> T-I-T-L-E).
     Every script's title line is caps, so this hits all of them. Title-case any
     purely alphabetic caps run; words containing digits (D4C, ACT2) are left
     alone because spelling those out IS correct."""
@@ -461,12 +455,17 @@ def _synth_chatterbox_segments(segments, out_path: Path,
 
 def narrate_script(script_path: Path, out_dir: Path = Path("data/audio"),
                    provider: str = "piper", voice: Path = DEFAULT_VOICE,
+                   out_path: Path | None = None,
                    **kwargs) -> Path:
-    """End-to-end: data/scripts/plunderer_script.md -> data/audio/plunderer.wav"""
+    """End-to-end: data/scripts/jojo_script.md -> data/audio/jojo.wav
+
+    out_path overrides the default data/audio/<series>.wav — handy for writing
+    several voice takes of the same script side by side without renaming.
+    """
     script_path = Path(script_path)
     raw = script_path.read_text(encoding="utf-8")
     series = script_path.name.replace("_script.md", "")
-    out = Path(out_dir) / f"{series}.wav"
+    out = Path(out_path) if out_path else Path(out_dir) / f"{series}.wav"
 
     if provider in ("chatterbox", "turbo"):
         # honour [INTENSITY:] markers unless the caller forced a value
@@ -497,13 +496,20 @@ if __name__ == "__main__":
         print("       python -m src.voice.tts --chatterbox <script> # expressive (recommended)")
         print("       python -m src.voice.tts --turbo <script>      # 3x faster, NO emotion control")
         print("       ... --chatterbox --exaggeration 0.8 --cfg 0.25 <script>")
+        print("       ... --chatterbox --ref path\\to\\voice.wav <script> # clone a different voice this run")
+        print("       ... --out data\\audio\\name.wav <script>        # write to a specific file (no renaming)")
         print("       python -m src.voice.tts --dry-run   <script>  # print spoken text")
         print("       python -m src.voice.tts --save-clean <script> # write data/pipper_scripts/")
         sys.exit(2)
     dry = "--dry-run" in sys.argv
     save_clean = "--save-clean" in sys.argv
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    sp = Path(args[0])
+    # The script is the .md argument — picking it by extension avoids mistaking
+    # a flag value (a --ref path, an --exaggeration number) for the script.
+    md = [a for a in sys.argv[1:] if a.endswith(".md")]
+    if not md:
+        print("error: no <script>.md provided")
+        sys.exit(2)
+    sp = Path(md[0])
     spoken = clean_script_for_tts(sp.read_text(encoding="utf-8"))
 
     if save_clean:
@@ -537,5 +543,10 @@ if __name__ == "__main__":
             kw["exaggeration"] = float(sys.argv[sys.argv.index("--exaggeration") + 1])
         if "--cfg" in sys.argv:
             kw["cfg_weight"] = float(sys.argv[sys.argv.index("--cfg") + 1])
-    out = narrate_script(sp, provider=provider, **kw)
+    # --ref lets you clone a different reference voice per run without touching
+    # the default models/reference_voice.wav (chatterbox/turbo only).
+    if "--ref" in sys.argv:
+        kw["audio_prompt_path"] = sys.argv[sys.argv.index("--ref") + 1]
+    out_path = Path(sys.argv[sys.argv.index("--out") + 1]) if "--out" in sys.argv else None
+    out = narrate_script(sp, provider=provider, out_path=out_path, **kw)
     print(f"\nwrote {out}")

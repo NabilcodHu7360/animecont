@@ -16,7 +16,7 @@ change make it slower.
 
 USE
     from src.obs.run_log import stage
-    with stage("voice", series="plunderer", provider="chatterbox") as s:
+    with stage("voice", series="jojo", provider="chatterbox") as s:
         ...
         s.count(chunks=25)
 

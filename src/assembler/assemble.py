@@ -10,7 +10,7 @@ the timeline, and that's what lives here.
 THE TIMELINE PROBLEM
 image_gen.py records each [VISUAL:] cue's offset in the narration (9%, 16%,
 23%...). Naively cutting exactly on those offsets breaks in two ways we hit on
-the real Plunderer script:
+the real scripts:
   1. COLLISIONS — two cues can land at the same offset (9% and 9%), flashing an
      image for a fraction of a second.
   2. LONG TAIL — the last cue is at 79%, so the final image would hold for ~75s
@@ -67,7 +67,7 @@ def build_timeline(scenes: list[dict], images_dir: Path,
     """
     starts = [s["offset"] * audio_seconds for s in scenes]
 
-    # The first cue rarely sits at 0% (the Plunderer opener lands at 9% = 32s),
+    # The first cue rarely sits at 0% (an opener can land at 9% = 32s),
     # which would open the video on 32 seconds of black. The first image always
     # covers the cold open.
     starts[0] = 0.0
@@ -273,9 +273,9 @@ def assemble(series: str,
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python -m src.assembler.assemble plunderer")
-        print("       python -m src.assembler.assemble plunderer --music path.mp3")
-        print("       python -m src.assembler.assemble plunderer --dry-run")
+        print("Usage: python -m src.assembler.assemble jojo")
+        print("       python -m src.assembler.assemble jojo --music path.mp3")
+        print("       python -m src.assembler.assemble jojo --dry-run")
         sys.exit(2)
     series = sys.argv[1]
     music = None

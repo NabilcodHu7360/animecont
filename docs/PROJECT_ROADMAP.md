@@ -43,7 +43,7 @@ The #1 product risk is **factual faithfulness** — an LLM inventing plot. That'
 **Steps:**
 1. Run the eval harness over all 12 scripts in `data/scripts/`.
 2. Read the report per script: citation coverage %, any dangling/broken tags, structural checks.
-3. Expect variation — e.g. Gachiakuta and any thin-sourced series will score differently from richly-sourced ones (Demon Slayer, Plunderer). That variation is itself a finding.
+3. Expect variation — e.g. Gachiakuta and any thin-sourced series will score differently from richly-sourced ones (Demon Slayer, Vinland Saga). That variation is itself a finding.
 4. Fix or flag anything that fails. This closes the "catch → supplement → regenerate" loop we used during ingest.
 5. Save the eval output as a baseline — CI (Stage 8) will later gate on it.
 

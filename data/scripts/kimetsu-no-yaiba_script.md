@@ -16,7 +16,7 @@
 
 ## MOVEMENT ONE — THE BAIT
 
-[VISUAL: a paper-screen room at night, wisteria in bloom outside]
+[VISUAL: a moonlit Japanese garden with cascading wisteria in bloom, a full moon behind misty trees]
 
 It begins not with a sword but with a sacrifice. Blind and dying, Kagaya Ubuyashiki — leader of the Demon Slayers — welcomes Muzan into his home, and calmly tells him the one thing the Demon King cannot bear to hear: that he will never be eternal, because the only thing that lasts is human feeling. [ch.137] [VISUAL: a house consumed by fire from within, screens glowing orange]
 

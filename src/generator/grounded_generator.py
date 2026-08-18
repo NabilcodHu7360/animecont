@@ -28,7 +28,7 @@ from ..grounding.retriever import Retriever
 def _chapter_start(chunk: Chunk) -> int:
     """Pull the starting chapter number out of a source_id for ordering.
 
-    source_id looks like 'plunderer|last-war-part-1|54-70' -> 54.
+    source_id looks like 'jojo|Steel_Ball_Run|54-70' -> 54.
     """
     parts = chunk.source_id.split("|")
     ch = parts[2] if len(parts) > 2 else ""

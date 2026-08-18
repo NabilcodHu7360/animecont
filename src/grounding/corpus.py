@@ -7,9 +7,9 @@ The whole product risk is that Claude invents plot points. The fix is to feed it
 passage has to carry a source we can point back to. We encode the source in the
 markdown heading itself, e.g.:
 
-    ## [series=plunderer | arc=last-war-part-1 | ch=54-70] Mizuka shoots Firenda
+    ## [series=jojo | page=Steel_Ball_Run | section=Conclusion] Johnny sails home
 
-so the citation ("plunderer ch.54-70") travels with the text through the whole
+so the citation ("jojo Steel_Ball_Run") travels with the text through the whole
 pipeline and ends up in the script.
 """
 from __future__ import annotations
@@ -32,7 +32,7 @@ class Passage:
 
     @property
     def citation(self) -> str:
-        """Human-readable citation string, e.g. 'plunderer ch.54-70'."""
+        """Human-readable citation string, e.g. 'jojo Steel_Ball_Run'."""
         series = self.meta.get("series", "?")
         ch = self.meta.get("ch")
         return f"{series} ch.{ch}" if ch else series
@@ -49,7 +49,7 @@ class Passage:
 
 
 def _parse_meta(meta_str: str) -> dict[str, str]:
-    """'series=plunderer | ch=54-70'  ->  {'series': 'plunderer', 'ch': '54-70'}"""
+    """'series=jojo | page=Steel_Ball_Run'  ->  {'series': 'jojo', 'page': 'Steel_Ball_Run'}"""
     out: dict[str, str] = {}
     for part in meta_str.split("|"):
         if "=" in part:
@@ -105,7 +105,7 @@ def load_corpus(path: str | Path) -> list[Passage]:
 if __name__ == "__main__":
     # Quick manual check
     here = Path(__file__).resolve().parents[2]
-    passages = load_corpus(here / "data" / "corpus" / "plunderer.md")
+    passages = load_corpus(here / "data" / "corpus" / "jojo.md")
     print(f"Loaded {len(passages)} passages")
     for p in passages[:3]:
         print(f"  [{p.citation}] {p.title}: {p.text[:70]}...")

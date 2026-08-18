@@ -29,26 +29,68 @@ from pathlib import Path
 
 VISUAL_RE = re.compile(r"\[VISUAL:\s*([^\]]+)\]", re.IGNORECASE)
 
-# One coherent look per series. Chosen for Plunderer: cold blues for the Abyss,
-# warm amber for the fragile peace — the story's emotional axis.
+# One coherent look per series, so every frame shares one palette and mood.
 STYLE_SUFFIXES = {
-    "plunderer": ("painterly anime background art, muted desaturated palette, "
-                  "cold blue shadows with warm amber highlights, soft "
-                  "atmospheric lighting, cinematic wide shot, melancholic, "
-                  "no characters, no text"),
-    "_default": ("painterly anime background art, cinematic wide shot, "
-                 "atmospheric lighting, no characters, no text"),
+    # "empty landscape, no people" leads each suffix: positive-prompt emptiness
+    # is a stronger signal than a negative, and front position survives CLIP's
+    # 77-token cap. Style follows. Keep total short so scene text isn't crowded.
+    # Locked to ONE look — photoreal cinematic. The earlier "anime key art,
+    # painterly" wording hedged and SD 1.5 resolved it inconsistently (mostly
+    # photoreal, occasional matte-painting outliers). Committing to photoreal +
+    # anti-painting negatives (below) keeps all 37 frames on the same look.
+    "jojo": ("empty landscape, no people, no characters, cinematic photograph, "
+             "photorealistic, golden-hour desert, dramatic volumetric light, "
+             "warm saturated color, ultra detailed, sharp focus"),
+    # Photoreal per-series palettes, matching each story's setting. Same locked
+    # photoreal look as jojo (anti-painting negatives applied below).
+    "gachiakuta": ("empty landscape, no people, no characters, cinematic "
+                   "photograph, photorealistic, gritty industrial wasteland, "
+                   "mountains of refuse, overcast grey sky, rust and grime, "
+                   "high contrast, dramatic light, ultra detailed"),
+    "solo-leveling": ("empty scene, no people, no characters, cinematic "
+                      "photograph, photorealistic, dark fantasy dungeon, "
+                      "glowing blue and violet magic light, ominous shadows, "
+                      "modern city at night, dramatic volumetric light, "
+                      "ultra detailed"),
+    "kimetsu-no-yaiba": ("empty landscape, no people, no characters, cinematic "
+                         "photograph, photorealistic, moonlit Taisho-era Japan, "
+                         "misty forest and traditional architecture, deep indigo "
+                         "night, warm lantern glow, dramatic light, ultra detailed"),
+    "jigokuraku": ("empty scene, no people, no characters, cinematic photograph, "
+                   "photorealistic, mystical japanese island, ancient palaces and "
+                   "giant glowing flowers, blood-red mist, bioluminescent petals, "
+                   "ominous, dramatic light, ultra detailed"),
+    "_default": ("empty landscape, no people, no characters, cinematic anime "
+                 "key art, painterly, dramatic light"),
 }
+
+
+def _character_design(series: str, role: str) -> str | None:
+    """The original design description for a role, from gen_characters.ROLES.
+    Prepended to the prompt so the render matches the locked reference design."""
+    try:
+        from .gen_characters import ROLES
+        return ROLES.get(series, {}).get(role)
+    except Exception:
+        return None
 
 
 @dataclass
 class Scene:
     index: int
-    prompt: str          # the raw cue text from the script
+    prompt: str          # the raw cue text (CHAR= stripped out)
     offset: float        # 0.0-1.0 position in the spoken narration
+    char: str | None = None   # role from [VISUAL: CHAR=role | ...], else None
 
     def full_prompt(self, series: str) -> str:
         suffix = STYLE_SUFFIXES.get(series, STYLE_SUFFIXES["_default"])
+        if self.char:
+            # Identity comes from the IP-Adapter reference, so the text focuses on
+            # SCENE + ACTION (kept first so CLIP's 77-token cap doesn't clip it),
+            # plus a short photoreal tag. We deliberately do NOT reuse the
+            # "empty scene, no people" style suffix here — we want the figure.
+            return (f"{self.prompt}, in a detailed scene, cinematic photograph, "
+                    "photorealistic, dramatic light")
         return f"{self.prompt}, {suffix}"
 
 
@@ -71,7 +113,14 @@ def parse_scenes(script_text: str) -> list[Scene]:
         # Spoken words BEFORE this cue = its position in the narration.
         before = clean_script_for_tts(body[:m.start()])
         offset = min(len(before.split()) / total_spoken, 1.0)
-        scenes.append(Scene(index=i, prompt=m.group(1).strip(), offset=offset))
+        raw = m.group(1).strip()
+        # Optional "CHAR=role | ..." prefix places a cast design in this shot.
+        char = None
+        cm = re.match(r"CHAR=([\w-]+)\s*\|\s*(.*)", raw, re.IGNORECASE)
+        if cm:
+            char = cm.group(1).lower()
+            raw = cm.group(2).strip()
+        scenes.append(Scene(index=i, prompt=raw, offset=offset, char=char))
     return scenes
 
 
@@ -113,18 +162,36 @@ def _render_placeholder(scene: Scene, out_path: Path, series: str) -> Path:
     return out_path
 
 
+IP_ADAPTER_SCALE = 0.5   # identity strength; lower lets the scene/background show
+
+
 def _render_sd(scene: Scene, out_path: Path, series: str,
-               pipe=None) -> Path:
+               pipe=None, ip_image=None, ip_scale: float = 0.0) -> Path:
     """Local Stable Diffusion. SLOW on CPU (no AMD accel on Windows) — treat as
     an overnight batch, not interactive. `pipe` is passed in so the model loads
-    once for the whole run."""
+    once for the whole run. When ip_image is given (a character reference) the
+    pipe must already have an IP-Adapter loaded; ip_scale sets its influence."""
     if pipe is None:
         raise ValueError("_render_sd needs a preloaded pipe")
-    img = pipe(scene.full_prompt(series),
-               negative_prompt="text, watermark, signature, people, faces, "
-                               "characters, letters",
-               num_inference_steps=25, guidance_scale=7.5,
-               width=768, height=432).images[0]
+    # Establishing shots suppress people; CHARACTER shots must NOT (we want the
+    # figure), so they only drop quality/style junk, never "person/face".
+    if scene.char:
+        negative = "text, watermark, signature, extra limbs, deformed, blurry, lowres"
+    else:
+        negative = ("people, person, human, man, woman, characters, figure, "
+                    "crowd, cyclist, rider, jockey, face, "
+                    "text, watermark, blurry, lowres")
+    if series in ("jojo", "gachiakuta", "solo-leveling", "kimetsu-no-yaiba",
+                  "jigokuraku"):
+        negative += (", painting, digital painting, illustration, drawing, "
+                     "sketch, cartoon, anime, matte painting, canvas texture, "
+                     "brush strokes, oversaturated cg render")
+    kwargs = dict(negative_prompt=negative, num_inference_steps=38,
+                  guidance_scale=7.5, width=768, height=432)
+    if ip_image is not None:
+        pipe.set_ip_adapter_scale(ip_scale)   # 0.0 on establishing shots = no effect
+        kwargs["ip_adapter_image"] = ip_image
+    img = pipe(scene.full_prompt(series), **kwargs).images[0]
     img = img.resize((1280, 720))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, quality=90)
@@ -146,7 +213,9 @@ def _load_sd():
 # ── entry point ──────────────────────────────────────────────────────────────
 
 def generate_for_script(script_path: Path, provider: str = "placeholder",
-                        out_root: Path = Path("data/images")) -> list[Scene]:
+                        out_root: Path = Path("data/images"),
+                        force: bool = False,
+                        characters: bool = False) -> list[Scene]:
     import json
     import time
 
@@ -159,20 +228,53 @@ def generate_for_script(script_path: Path, provider: str = "placeholder",
 
     out_dir = Path(out_root) / series
     out_dir.mkdir(parents=True, exist_ok=True)
-    print(f"{series}: {len(scenes)} scenes [{provider}]")
+    n_char = sum(1 for s in scenes if s.char)
+    print(f"{series}: {len(scenes)} scenes [{provider}]"
+          + (f", {n_char} with cast (IP-Adapter)" if characters else ""))
 
     from ..obs.run_log import stage
     pipe = _load_sd() if provider == "sd" else None
+
+    # Character mode: load the IP-Adapter once and each role's locked reference.
+    ip_refs, ip_blank = {}, None
+    if provider == "sd" and characters:
+        from diffusers.utils import load_image
+        from PIL import Image as _Image
+        print("  loading IP-Adapter (first run downloads the adapter weights)...")
+        pipe.load_ip_adapter("h94/IP-Adapter", subfolder="models",
+                             weight_name="ip-adapter_sd15.bin")
+        char_dir = Path("data/characters") / series
+        for role in sorted({s.char for s in scenes if s.char}):
+            ref = char_dir / f"{role}.png"
+            if not ref.exists():
+                raise FileNotFoundError(f"missing character reference: {ref}")
+            ip_refs[role] = load_image(str(ref))
+        ip_blank = _Image.new("RGB", (224, 224), (128, 128, 128))  # scale-0 filler
+        print(f"  loaded {len(ip_refs)} character references")
+
     t0 = time.time()
     with stage("images", series=series, provider=provider) as st:
       st.count(scenes=len(scenes))
       for s in scenes:
         p = out_dir / f"scene_{s.index:03d}.jpg"
+        # Resume: skip images that already exist (unless --force). Lets a run
+        # continue after a Ctrl+C / crash without re-rendering finished scenes.
+        # To regenerate after a style change, pass force=True or delete the dir.
+        if provider == "sd" and not force and p.exists():
+            print(f"  scene {s.index + 1}/{len(scenes)} exists — skip")
+            continue
         if provider == "placeholder":
             _render_placeholder(s, p, series)
         elif provider == "sd":
             t = time.time()
-            _render_sd(s, p, series, pipe=pipe)
+            if characters and s.char:
+                _render_sd(s, p, series, pipe=pipe, ip_image=ip_refs[s.char],
+                           ip_scale=IP_ADAPTER_SCALE)
+            elif characters:
+                # establishing shot: keep IP-Adapter loaded but neutral (scale 0)
+                _render_sd(s, p, series, pipe=pipe, ip_image=ip_blank, ip_scale=0.0)
+            else:
+                _render_sd(s, p, series, pipe=pipe)
             st.sample(time.time() - t)       # per-image, for p50/p95/max
             done = s.index + 1
             eta = ((time.time() - t0) / done) * (len(scenes) - done)
@@ -198,6 +300,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python -m src.images.image_gen <script>            # placeholder cards")
         print("       python -m src.images.image_gen --sd <script>       # stable diffusion")
+        print("       python -m src.images.image_gen --sd --force <script> # re-render all (ignore existing)")
+        print("       python -m src.images.image_gen --sd --characters <script> # place cast designs via IP-Adapter")
         print("       python -m src.images.image_gen --list <script>     # show cues only")
         sys.exit(2)
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
@@ -208,4 +312,6 @@ if __name__ == "__main__":
             print(f"[{s.offset:5.0%}] {s.prompt}")
             print(f"        -> {s.full_prompt(series)[:100]}...")
         sys.exit(0)
-    generate_for_script(sp, provider="sd" if "--sd" in sys.argv else "placeholder")
+    generate_for_script(sp, provider="sd" if "--sd" in sys.argv else "placeholder",
+                        force="--force" in sys.argv,
+                        characters="--characters" in sys.argv)

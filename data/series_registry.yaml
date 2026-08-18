@@ -116,16 +116,7 @@ series:
     pages: [International_Assassins_arc, Gun_Devil_arc, Control_Devil_arc, Justice_Devil_arc,
             Dating_Denji_arc, Falling_Devil_arc, Chainsaw_Man_Church_arc, Aging_Devil_arc, War_Devil_arc]
 
-  - name: Plunderer
-    subdomain: plunderer
-    continuation_type: continuous
-    cutoff_chapter: 37         # anime finale
-    # HAND-CURATED corpus already exists at data/corpus/plunderer.md with richer chapter-range
-    # citations than auto-ingest gives. Builder SKIPS this (empty pages) so it won't be overwritten.
-    # Doubles as the golden / hand-verified reference corpus for evaluation.
-    pages: []                  # intentionally empty — do not fetch; corpus is hand-built
-
-  # --- add your remaining ~13 below, copy this block per anime ---
+  # --- add your remaining series below, copy a block per anime ---
 
   # OUT OF SCOPE — no manga runs AHEAD of the anime, so there's no unadapted story to continue.
   # - Sekiro: No Defeat   (anime of a video game; story ends with the game)
