@@ -1,8 +1,8 @@
 Third-party content and licensing
 =================================
 
-The MIT license in LICENSE covers the code. The data in this repository has
-different terms, and this file exists to state them plainly.
+The GNU AGPL-3.0 license in LICENSE covers the code. The data in this repository
+has different terms, and this file exists to state them plainly.
 
 data/corpus/*.md — CC BY-SA 3.0
 -------------------------------
