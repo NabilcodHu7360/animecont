@@ -6,7 +6,7 @@ captions → MP4. Every model runs locally. No paid APIs anywhere in the pipelin
 
 **▶ Watch the output:**
 
-- [JoJo's Bizarre Adventure](https://youtu.be/xU2NTKuiiOA) — the flagship
+- [JoJo's Bizarre Adventure](https://youtu.be/xU2NTKuiiOA)
 - [Solo Leveling](https://youtu.be/xEX57cl4e1Y)
 - [Demon Slayer](https://youtu.be/fec4XSQFMZw)
 - [Hell's Paradise](https://youtu.be/P8asWqpduZI)
