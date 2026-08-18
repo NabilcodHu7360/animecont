@@ -1,5 +1,11 @@
 # AnimeCont
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![Paid APIs](https://img.shields.io/badge/paid_APIs-0-brightgreen.svg)
+![Runs locally](https://img.shields.io/badge/runs-100%25_local-brightgreen.svg)
+![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+
 Turns "what happens in the manga after the anime ends?" into a finished, narrated,
 cited video essay — wiki ingest → grounded script → evaluation → voice → images →
 captions → MP4. Every model runs locally. No paid APIs anywhere in the pipeline.
@@ -144,11 +150,13 @@ and the character-design boundary is one to treat deliberately.
 
 ## Licensing
 
-Code is MIT. The data isn't: `data/corpus/` is built from Fandom wikis, whose community
-content is **CC BY-SA 3.0** — so the corpus files and scripts derived from them carry
-share-alike terms, not MIT. Every passage keeps its source in the heading, so
-attribution is mechanical. See `NOTICE` for the full picture, including model licenses
-(SD 1.5 ships under CreativeML Open RAIL-M).
+Code is **AGPL-3.0** — strong copyleft: anyone who runs a modified version, including
+over a network, must make their source available under the same terms. The data is
+separate: `data/corpus/` is built from Fandom wikis, whose community content is
+**CC BY-SA 3.0**, so the corpus files and scripts derived from them carry share-alike
+terms. Every passage keeps its source in the heading, so attribution is mechanical.
+See `NOTICE` for the full picture, including model licenses (SD 1.5 ships under
+CreativeML Open RAIL-M).
 
 ## Deeper detail
 
